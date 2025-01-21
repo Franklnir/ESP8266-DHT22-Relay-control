@@ -7,21 +7,21 @@
 const char* ssid = "GEORGIA";  // Replace with your Wi-Fi SSID
 const char* password = "Georgia12345";  // Replace with your Wi-Fi password
 
-// Wi-Fi access point credentials (fallback mode)
-const char* ap_ssid = "tesip";
+// Wi-Fi access point credentials
+const char* ap_ssid = "tesip";  
 const char* ap_password = "12345678";
 
 // Static IP configuration for Wi-Fi connection
-IPAddress local_IP(192, 168, 1, 5); // Set the static IP address
-IPAddress gateway(192, 168, 1, 1);  // Set the gateway (usually your router's IP)
-IPAddress subnet(255, 255, 255, 0); // Set the subnet mask
+IPAddress local_IP(192, 168, 1, 5);
+IPAddress gateway(192, 168, 1, 1);
+IPAddress subnet(255, 255, 255, 0);
 
 // GPIO pins for relays (active low)
 const int relayPins[] = {5, 4, 0, 2};
 
 // Relay states
-bool relayStates[] = {HIGH, HIGH, HIGH, HIGH}; // Start with relays off
-bool autoControlRelay4 = false; // Automatic control state for relay 4
+bool relayStates[] = {HIGH, HIGH, HIGH, HIGH};
+bool autoControlRelay4 = false;
 
 // DHT22 sensor setup
 #define DHTPIN 15
@@ -33,42 +33,45 @@ float humidity = 0.0;
 // Create a WebServer object on port 80
 ESP8266WebServer server(80);
 
-// Toggle relay function
+// Function to toggle relay
 void toggleRelay(int relayIndex) {
   relayStates[relayIndex] = !relayStates[relayIndex];
   digitalWrite(relayPins[relayIndex], relayStates[relayIndex]);
-  Serial.print("Relay ");
-  Serial.print(relayIndex + 1);
-  Serial.println(relayStates[relayIndex] == LOW ? " ON" : " OFF");
 }
 
-// Automatic control for relay 4 based on temperature
+// Automatic control for relay 4
 void autoControlRelay() {
   if (autoControlRelay4) {
     if (temperature <= 24.4) {
-      relayStates[3] = HIGH; // Turn OFF relay 4
+      relayStates[3] = HIGH;
     } else if (temperature >= 29.0) {
-      relayStates[3] = LOW; // Turn ON relay 4
+      relayStates[3] = LOW;
     }
     digitalWrite(relayPins[3], relayStates[3]);
   }
 }
-
-// HTML content generation function with modular classes and colors
 String generateHTML() {
   String html = "<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">"
                 "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css\">"
-                "<style>body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #1C1C2D; color: #FFFFFF; }"
-                ".container { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; padding: 20px; }"
-                ".card { background: linear-gradient(145deg, #2C2C3E, #232330); box-shadow: 5px 5px 15px #18181f, -5px -5px 15px #2e2e3d; border-radius: 20px; padding: 20px; text-align: center; }"
-                ".card h2 { margin: 10px 0; font-size: 18px; }"
-                ".card p { font-size: 16px; margin: 5px 0; }"
-                ".temperature { background: linear-gradient(145deg, #ff7eb3, #d65d91); }"
-                ".humidity { background: linear-gradient(145deg, #5dc8ff, #478ec6); }"
-                ".relay { background: linear-gradient(145deg, #69e7bd, #4cb896); }"
-                ".button { display: block; padding: 10px 15px; margin-top: 10px; font-size: 14px; color: #FFFFFF; background: linear-gradient(145deg, #3B3B4F, #2A2A38); border: none; border-radius: 10px; cursor: pointer; }"
-                ".button.off { background: linear-gradient(145deg, #ff5e5e, #cc4848); }"
-                ".icon { font-size: 24px; margin-bottom: 10px; color: #FFF; }"
+                "<style>"
+                "body { font-family: 'Arial', sans-serif; margin: 0; padding: 0; background: linear-gradient(180deg, #1E1E2F, #141423); color: #FFFFFF; }"
+                "h1 { text-align: center; margin: 10px 0; font-size: 18px; color: #F8F8F8; text-shadow: 1px 1px 5px #000; }"
+                ".container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; }"
+                ".card { background: linear-gradient(145deg, #32324A, #1F1F2F); box-shadow: 3px 3px 10px #12121D, -3px -3px 10px #3A3A50; "
+                "border-radius: 10px; padding: 10px; text-align: center; font-size: 14px; transition: transform 0.2s; }"
+                ".card:hover { transform: scale(1.05); }"
+                ".card h2 { font-size: 14px; margin: 5px 0; color: #F8F8F8; }"
+                ".card p { font-size: 12px; margin: 5px 0; color: #A1A1C1; }"
+                ".button { display: block; width: 100%; padding: 8px; font-size: 12px; font-weight: bold; margin-top: 5px; "
+                "color: #FFFFFF; background: linear-gradient(145deg, #474760, #343448); border: none; border-radius: 5px; cursor: pointer; transition: background 0.3s; }"
+                ".button:hover { background: linear-gradient(145deg, #57577A, #42425C); }"
+                ".button.off { background: linear-gradient(145deg, #FF5E5E, #CC4848); }"
+                ".button.off:hover { background: linear-gradient(145deg, #FF7A7A, #D65555); }"
+                ".icon { font-size: 20px; margin-bottom: 10px; color: #FFF; text-shadow: 1px 1px 5px #000; }"
+                ".temperature { background: linear-gradient(145deg, #FF7EBC, #D65D92); }"
+                ".humidity { background: linear-gradient(145deg, #5DC8FF, #478EC6); }"
+                ".relay { background: linear-gradient(145deg, #69E7BD, #4CB896); }"
+                ".relay:hover { background: linear-gradient(145deg, #7BF4CD, #55CA9F); }"
                 "</style>"
                 "<script>"
                 "function fetchData() {"
@@ -79,10 +82,10 @@ String generateHTML() {
                 "      document.getElementById('humidity').innerHTML = data.humidity + ' %';"
                 "    });"
                 "}"
-                "setInterval(fetchData, 2000); // Refresh every 2 seconds"
+                "setInterval(fetchData, 2000);"
                 "</script></head><body>";
 
-  html += "<h1 style=\"text-align: center; margin-top: 20px;\">ESP8266 Sensor Dashboard</h1>";
+  html += "<h1>ESP8266 Sensor Dashboard</h1>";
   html += "<div class=\"container\">";
 
   // Temperature card
@@ -112,57 +115,44 @@ String generateHTML() {
   }
 
   // Automatic control button for relay 4
-  html += "<div class=\"card relay\">";
-  html += "<i class=\"fas fa-cogs icon\"></i>";
-  html += "<h2>Relay 4 Automatic Control</h2>";
-  html += "<p>Status: " + String(autoControlRelay4 ? "Enabled" : "Disabled") + "</p>";
-  html += "<form action=\"/toggle_auto_4\" method=\"GET\">";
-  html += "<button class=\"button " + String(autoControlRelay4 ? "off" : "") + "\" type=\"submit\">"
-          + (autoControlRelay4 ? "Disable" : "Enable") + "</button></form>";
-  html += "</div>";
+  html += "<div class=\"card relay\">"
+          "<i class=\"fas fa-cogs icon\"></i>"
+          "<h2>Relay 4 Automatic Control</h2>"
+          "<p>Status: " + String(autoControlRelay4 ? "Enabled" : "Disabled") + "</p>"
+          "<form action=\"/toggle_auto_4\" method=\"GET\">"
+          "<button class=\"button " + String(autoControlRelay4 ? "off" : "") + "\" type=\"submit\">"
+          + (autoControlRelay4 ? "Disable" : "Enable") + "</button></form>"
+          "</div>";
 
   html += "</div></body></html>";
   return html;
 }
 
+
+
 // Read DHT sensor data
 void readDHTSensor() {
   temperature = dht.readTemperature();
   humidity = dht.readHumidity();
-
   if (isnan(temperature) || isnan(humidity)) {
-    Serial.println("Failed to read from DHT sensor!");
     temperature = 0.0;
     humidity = 0.0;
-  } else {
-    Serial.print("Temperature: ");
-    Serial.print(temperature);
-    Serial.print(" °C");
-    Serial.print(" Humidity: ");
-    Serial.print(humidity);
-    Serial.println(" %");
   }
 }
+
+
 
 // Setup server routes
 void setupServerRoutes() {
   server.on("/", HTTP_GET, []() {
     server.send(200, "text/html", generateHTML());
   });
-
-  server.on("/get_sensor_data", HTTP_GET, []() {
-    String json = "{\"temperature\": " + String(temperature, 1) + ", \"humidity\": " + String(humidity, 1) + "}";
-    server.send(200, "application/json", json);
-  });
-
   for (int i = 0; i < 4; i++) {
-    int relayIndex = i;
-    server.on(("/toggle_relay_" + String(i)).c_str(), HTTP_GET, [relayIndex]() {
-      toggleRelay(relayIndex);
+    server.on(("/toggle_relay_" + String(i)).c_str(), HTTP_GET, [i]() {
+      toggleRelay(i);
       server.send(200, "text/html", generateHTML());
     });
   }
-
   server.on("/toggle_auto_4", HTTP_GET, []() {
     autoControlRelay4 = !autoControlRelay4;
     server.send(200, "text/html", generateHTML());
@@ -175,19 +165,18 @@ void setup() {
   // Initialize relay pins
   for (int i = 0; i < 4; i++) {
     pinMode(relayPins[i], OUTPUT);
-    digitalWrite(relayPins[i], HIGH); // Relays initially off
+    digitalWrite(relayPins[i], HIGH);
   }
 
   // Initialize DHT sensor
   dht.begin();
 
-  // Set static IP configuration
+  // Set static IP
   WiFi.config(local_IP, gateway, subnet);
 
-  // Connect to Wi-Fi network
+  // Try connecting to Wi-Fi
   WiFi.begin(ssid, password);
   int tries = 0;
-
   while (WiFi.status() != WL_CONNECTED && tries < 30) {
     delay(500);
     Serial.print(".");
@@ -197,29 +186,22 @@ void setup() {
   if (WiFi.status() == WL_CONNECTED) {
     Serial.println("Connected to Wi-Fi");
     Serial.print("IP Address: ");
-    Serial.println(WiFi.localIP());  // Print the IP address assigned by your home Wi-Fi
+    Serial.println(WiFi.localIP());
   } else {
-    Serial.println("Failed to connect to Wi-Fi, switching to AP mode.");
-
-    // If failed to connect, create Access Point
-    WiFi.softAPConfig(local_IP, gateway, subnet);
-    if (WiFi.softAP(ap_ssid, ap_password, 6)) {
-      Serial.println("Access Point created successfully.");
-    } else {
-      Serial.println("Failed to create Access Point.");
-    }
-
-    Serial.print("Access Point IP: ");
-    Serial.println(WiFi.softAPIP());  // Print the IP address for Access Point mode
+    Serial.println("Wi-Fi connection failed. Starting Access Point mode...");
   }
+
+  // Start Access Point
+  WiFi.softAP(ap_ssid, ap_password);
+  Serial.print("Access Point IP: ");
+  Serial.println(WiFi.softAPIP());
 
   setupServerRoutes();
   server.begin();
-  Serial.println("Web server started.");
 }
 
 void loop() {
-  readDHTSensor(); // Read temperature and humidity
-  autoControlRelay(); // Automatic control for relay 4
+  readDHTSensor();
+  autoControlRelay();
   server.handleClient();
 }
